@@ -62,11 +62,18 @@ class SidebarTreeView(Gtk.TreeView):
 
         self.runners = sorted(runners.__all__)
         self.platforms = sorted(platforms.__all__)
+        self.tags = ["Strategy", "First Person", "Rogue-like"]
         self.platform_node = None
         self.load_runners()
         self.load_platforms()
+        self.load_tags()
         self.update()
         self.expand_all()
+
+    def load_tags(self):
+        self.tag_node = self.model.append(None, ['tags', '', None, "By Tags"])
+        for tag in self.tags:
+            self.model.append(self.tag_node, ['tags', tag, None, tag])
 
     def load_runners(self):
         """Append runners to the model."""
@@ -103,10 +110,11 @@ class SidebarTreeView(Gtk.TreeView):
     def filter_rule(self, model, iter, data):
         if not model[iter][0]:
             return False
-        if (model[iter][0] == 'runners' or model[iter][0] == 'platforms') and model[iter][1] == '':
+        if (model[iter][0] == 'runners' or model[iter][0] == 'platforms' or model[iter][0] == 'tags') and model[iter][1] == '':
             return True
         return (model[iter][0] == 'runners' and model[iter][1] in self.installed_runners) or \
-               (model[iter][0] == 'platforms' and model[iter][1] in self.active_platforms)
+               (model[iter][0] == 'platforms' and model[iter][1] in self.active_platforms) or \
+               (model[iter][0] == 'tags')
 
     def update(self, *args):
         self.installed_runners = [runner.name for runner in runners.get_installed()]
