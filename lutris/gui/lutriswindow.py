@@ -69,6 +69,7 @@ class LutrisWindow(Gtk.ApplicationWindow):
         self.last_selected_game = None
         self.selected_runner = None
         self.selected_platform = None
+        self.selected_tag = None
 
         # Load settings
         width = int(settings.read_setting('width') or 800)
@@ -341,7 +342,7 @@ class LutrisWindow(Gtk.ApplicationWindow):
             child = scrollwindow_children[0]
             child.destroy()
         self.games_scrollwindow.add(self.view)
-        self.set_selected_filter(self.selected_runner, self.selected_platform)
+        self.set_selected_filter(self.selected_runner, self.selected_platform, self.selected_tag)
         self.set_show_installed_state(self.filter_installed)
         self.view.show_all()
 
@@ -760,17 +761,22 @@ class LutrisWindow(Gtk.ApplicationWindow):
         type, slug = widget.get_selected_filter()
         selected_runner = None
         selected_platform = None
+        selected_tag = None
         if not slug:
             pass
         elif type == 'platforms':
             selected_platform = slug
         elif type == 'runners':
             selected_runner = slug
-        self.set_selected_filter(selected_runner, selected_platform)
+        elif type == 'tags':
+            selected_tag = slug
+        self.set_selected_filter(selected_runner, selected_platform, selected_tag)
 
-    def set_selected_filter(self, runner, platform):
+    def set_selected_filter(self, runner, platform, tag):
         self.selected_runner = runner
         self.selected_platform = platform
+        self.selected_tag = tag
         self.game_store.filter_runner = self.selected_runner
         self.game_store.filter_platform = self.selected_platform
+        self.game_store.filter_tag = self.selected_tag
         self.game_store.modelfilter.refilter()
