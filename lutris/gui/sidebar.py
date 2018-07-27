@@ -2,6 +2,7 @@ from gi.repository import Gtk, GdkPixbuf, GObject
 
 from lutris import runners
 from lutris import platforms
+from lutris import tags
 from lutris import pga
 from lutris.gui.runnerinstalldialog import RunnerInstallDialog
 from lutris.gui.config_dialogs import RunnerConfigDialog
@@ -62,7 +63,7 @@ class SidebarTreeView(Gtk.TreeView):
 
         self.runners = sorted(runners.__all__)
         self.platforms = sorted(platforms.__all__)
-        self.tags = ["Strategy", "First Person", "Rogue-like"]
+        self.tags = tags.__all__
         self.platform_node = None
         self.load_runners()
         self.load_platforms()
