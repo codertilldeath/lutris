@@ -29,8 +29,9 @@ from lutris.util.log import logger
     COL_LASTPLAYED_TEXT,
     COL_INSTALLED,
     COL_INSTALLED_AT,
-    COL_INSTALLED_AT_TEXT
-) = list(range(13))
+    COL_INSTALLED_AT_TEXT,
+    COL_TAGS
+) = list(range(14))
 
 COLUMN_NAMES = {
     COL_NAME: 'name',
@@ -55,9 +56,10 @@ class GameStore(GObject.Object):
         self.filter_text = None
         self.filter_runner = None
         self.filter_platform = None
+        self.filter_tag = None
         self.runner_names = {}
 
-        self.store = Gtk.ListStore(int, str, str, Pixbuf, str, str, str, str, int, str, bool, int, str)
+        self.store = Gtk.ListStore(int, str, str, Pixbuf, str, str, str, str, int, str, bool, int, str, object)
         self.store.set_sort_column_id(COL_NAME, Gtk.SortType.ASCENDING)
         self.modelfilter = self.store.filter_new()
         self.modelfilter.set_visible_func(self.filter_view)
@@ -109,6 +111,10 @@ class GameStore(GObject.Object):
             platform = model.get_value(_iter, COL_PLATFORM)
             if platform != self.filter_platform:
                 return False
+        if self.filter_tag:
+            tags = model.get_value(_iter, COL_TAGS)
+            if self.filter_tag not in tags:
+                return False
         return True
 
     def add_game_by_id(self, game_id):
@@ -130,6 +136,8 @@ class GameStore(GObject.Object):
         runner_human_name = ''
         if runner_name:
             game_inst = Game(game['id'])
+            tags = game_inst.config.game_config.get('tags') or []
+
             if not game_inst.is_installed:
                 return
             if runner_name in self.runner_names:
@@ -170,7 +178,8 @@ class GameStore(GObject.Object):
             lastplayed_text,
             game['installed'],
             game['installed_at'],
-            installed_at_text
+            installed_at_text,
+            tags
         ))
 
     def set_icon_type(self, icon_type):
