@@ -1,7 +1,7 @@
 import os
 from gi.repository import Gtk, Pango
 
-from lutris import runners, settings
+from lutris import runners, settings, tags
 from lutris.config import LutrisConfig, TEMP_CONFIG, make_game_config_id
 from lutris.game import Game
 from lutris import gui
@@ -52,6 +52,8 @@ class GameDialogCommon(object):
         info_box.pack_start(self.runner_box, False, False, 5)  # Runner
 
         info_box.pack_start(self._get_year_box(), False, False, 5)  # Year
+
+        info_box.pack_start(self._get_tags_box(), False, False, 5)  # Tags
 
         info_sw = self.build_scrolled_window(info_box)
         self._add_notebook_tab(info_sw, "Game info")
@@ -146,6 +148,28 @@ class GameDialogCommon(object):
         box.pack_start(self.year_entry, True, True, 20)
 
         return box
+
+    def _get_tags_box(self):
+        box = Gtk.HBox()
+
+        for tag in tags.__all__:
+            button = Gtk.CheckButton(label=tag)
+
+            if tag in self.tags:
+                button.set_active('True')
+
+            button._value = tag
+            button.connect("toggled", self._on_tags_toggled)
+            box.pack_start(button, False, False, 20)
+
+        return box
+
+    def _on_tags_toggled(self, button):
+        if button.get_active():
+            self.tags.append(button._value)
+        else:
+            self.tags.remove(button._value)
+        print(self.tags)
 
     def _set_image(self, image_format):
         assert image_format in ('banner', 'icon')
@@ -356,6 +380,8 @@ class GameDialogCommon(object):
         if self.lutris_config.game_config_id == TEMP_CONFIG:
             self.lutris_config.game_config_id = self.get_config_id()
 
+        self.lutris_config.game_config['tags'] = self.tags
+
         runner_class = runners.import_runner(self.runner_name)
         runner = runner_class(self.lutris_config)
         self.game.name = name
@@ -439,6 +465,7 @@ class AddGameDialog(Dialog, GameDialogCommon):
         self.lutris_config = LutrisConfig(runner_slug=self.runner_name,
                                           game_config_id=self.game_config_id,
                                           level='game')
+        self.tags = []
         self.build_notebook()
         self.build_tabs('game')
         self.build_action_area(self.on_save, callback)
@@ -462,6 +489,7 @@ class EditGameConfigDialog(Dialog, GameDialogCommon):
         self.game = game
         self.lutris_config = game.config
         self.game_config_id = game.config.game_config_id
+        self.tags = self.lutris_config.game_config.get('tags') or []
         self.slug = game.slug
         self.runner_name = game.runner_name
 

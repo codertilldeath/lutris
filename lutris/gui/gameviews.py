@@ -113,7 +113,7 @@ class GameStore(GObject.Object):
                 return False
         if self.filter_tag:
             tags = model.get_value(_iter, COL_TAGS)
-            if self.filter_tag not in tags:
+            if tags is None or self.filter_tag not in tags:
                 return False
         return True
 
@@ -134,6 +134,7 @@ class GameStore(GObject.Object):
         platform = ''
         runner_name = game['runner']
         runner_human_name = ''
+        tags = []
         if runner_name:
             game_inst = Game(game['id'])
             tags = game_inst.config.game_config.get('tags') or []
